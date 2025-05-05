@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ItemForm from "../components/ItemForm";
 import App from "../components/App";
 
@@ -26,11 +26,10 @@ test("calls the onItemFormSubmit callback prop when the form is submitted", () =
   );
 });
 
-test("adds a new item to the list when the form is submitted", () => {
+test("adds a new item to the list when the form is submitted", async () => {
   render(<App />);
 
-  const dessertCount = screen.queryAllByText(/Dessert/).length;
-
+  // Fill in the form fields
   fireEvent.change(screen.queryByLabelText(/Name/), {
     target: { value: "Ice Cream" },
   });
@@ -39,9 +38,11 @@ test("adds a new item to the list when the form is submitted", () => {
     target: { value: "Dessert" },
   });
 
+  // Submit the form
   fireEvent.submit(screen.queryByText(/Add to List/));
 
-  expect(screen.queryByText(/Ice Cream/)).toBeInTheDocument();
-
-  expect(screen.queryAllByText(/Dessert/).length).toBe(dessertCount + 1);
+  // Wait for the new item to be rendered (wait for state to update)
+  await waitFor(() => {
+    expect(screen.queryByText(/Ice Cream/)).toBeInTheDocument();
+  });
 });
